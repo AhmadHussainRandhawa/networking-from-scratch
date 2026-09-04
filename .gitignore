@@ -1,0 +1,59 @@
+# Go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Build output
+/bin/
+/build/
+/dist/
+/out/
+
+# Go coverage & profiling
+coverage.out
+coverage.html
+*.coverprofile
+*.prof
+*.pprof
+
+# Go workspace
+go.work
+go.work.sum
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.orig
+*~
+
+# Ubuntu / Linux
+.directory
+.Trash-*
+
+# Editors
+.vscode/
+.idea/
+
+# Network captures
+*.pcap
+*.pcapng
+
+# Local dumps / traces
+*.dump
+*.trace
