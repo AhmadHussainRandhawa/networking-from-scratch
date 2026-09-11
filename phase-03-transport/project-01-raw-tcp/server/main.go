@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
@@ -22,4 +23,10 @@ func main() {
 	defer conn.Close()
 
 	fmt.Println("client connected:", conn.RemoteAddr())
+
+	reader := bufio.NewReader(conn)
+	message, err := reader.ReadString('\n')
+
+	fmt.Printf("received: %q\n", message)
+
 }
