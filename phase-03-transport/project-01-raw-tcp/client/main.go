@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
@@ -21,5 +22,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	reader := bufio.NewReader(conn)
+
+	message, err = reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("received: %q\n", message)
 
 }

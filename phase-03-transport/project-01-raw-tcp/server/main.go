@@ -29,4 +29,13 @@ func main() {
 
 	fmt.Printf("received: %q\n", message)
 
+	response := "WELCOME\n"
+
+	_, err = conn.Write([]byte(response))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("sent: %q\n", response)
+
 }
