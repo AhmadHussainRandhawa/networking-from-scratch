@@ -8,28 +8,61 @@ import (
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "127.0.0.23:9000")
+	conn, err := net.Dial("tcp", "localhost:9000")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close()
 
-	fmt.Println("Client Connected to:", conn.RemoteAddr())
-
-	message := "HELLo\n"
-
-	_, err = conn.Write([]byte(message))
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Println("connected to:", conn.RemoteAddr())
 
 	reader := bufio.NewReader(conn)
 
-	message, err = reader.ReadString('\n')
+	// HELLO
+	if _, err := conn.Write([]byte("HELLO\n")); err != nil {
+		log.Fatal(err)
+	}
+
+	response, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("received: %q\n", message)
+	fmt.Printf("server: %q\n", response)
 
+	// MSG
+	if _, err := conn.Write([]byte("MSG hello server\n")); err != nil {
+		log.Fatal(err)
+	}
+
+	response, err = reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("server: %q\n", response)
+
+	// Another MSG
+	if _, err := conn.Write([]byte("MSG TCP is a byte stream\n")); err != nil {
+		log.Fatal(err)
+	}
+
+	response, err = reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("server: %q\n", response)
+
+	// QUIT
+	if _, err := conn.Write([]byte("QUIT\n")); err != nil {
+		log.Fatal(err)
+	}
+
+	response, err = reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("server: %q\n", response)
 }
