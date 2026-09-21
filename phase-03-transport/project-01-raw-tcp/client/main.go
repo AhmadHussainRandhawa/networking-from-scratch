@@ -13,5 +13,12 @@ func main() {
 	}
 	defer conn.Close()
 
-	fmt.Println("Client Connected to:", conn.RemoteAddr())
+	fmt.Println("Connected to server:", conn.RemoteAddr())
+
+	_, err = conn.Write([]byte("Hello\n"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("sent: HELLO")
 }
