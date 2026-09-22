@@ -33,7 +33,6 @@ func main() {
 	}
 
 	message := string(buffer[:n])
-
 	fmt.Printf("received %d bytes: %q\n", n, message)
 
 	if message == "HELLO\n" {
@@ -43,4 +42,25 @@ func main() {
 		}
 	}
 	fmt.Println("sent: WELCOME")
+
+	_, err = conn.Read(buffer)
+	if err != nil {
+		if err == io.EOF {
+			fmt.Println("client closed connection")
+			return
+		}
+
+	}
+	log.Fatal(err)
+
+	if len(message) >= len("MESSAGE ") && message[:len("MESSAGE ")] == "MESSAGE " {
+		fmt.Println("application message: ", message[len("MESSAGE "):])
+	}
+
+	_, err = conn.Write([]byte("ACK\n"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("sent: ACK")
+
 }
