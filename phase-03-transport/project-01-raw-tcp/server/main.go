@@ -32,5 +32,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("received %d bytes: %q\n", n, buffer[:n])
+	message := string(buffer[:n])
+
+	fmt.Printf("received %d bytes: %q\n", n, message)
+
+	if message == "HELLO\n" {
+		_, err := conn.Write([]byte("WELCOME\n"))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	fmt.Println("sent: WELCOME")
 }
