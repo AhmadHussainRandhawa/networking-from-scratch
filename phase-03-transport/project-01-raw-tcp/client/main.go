@@ -13,22 +13,26 @@ func main() {
 	}
 	defer conn.Close()
 
-	fmt.Println("Connected to server:", conn.RemoteAddr())
+	fmt.Println("connected to server:", conn.RemoteAddr())
 
+	// Step 1: Handshake
 	_, err = conn.Write([]byte("HELLO\n"))
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("sent: HELLO")
 
 	buffer := make([]byte, 1024)
+
 	n, err := conn.Read(buffer)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(buffer[:n]))
+	fmt.Printf("received: %q\n", buffer[:n])
 
+	// Step 2: Send application message
 	_, err = conn.Write([]byte("MESSAGE hello server\n"))
 	if err != nil {
 		log.Fatal(err)
@@ -36,12 +40,11 @@ func main() {
 
 	fmt.Println("sent: MESSAGE hello server")
 
-	// wait for ACK
-	conn.Read(buffer)
+	// Step 3: Wait for ACK
+	n, err = conn.Read(buffer)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("received: %q\n", string(buffer[:n]))
-
+	fmt.Printf("received: %q\n", buffer[:n])
 }
