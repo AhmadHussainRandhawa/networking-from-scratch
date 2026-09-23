@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"log"
@@ -25,13 +26,13 @@ func main() {
 
 	fmt.Println("client connected:", conn.RemoteAddr())
 
-	buffer := make([]byte, 1024)
+	reader := bufio.NewReader(conn)
 
 	// -------------------------
 	// Handshake
 	// -------------------------
 
-	n, err := conn.Read(buffer)
+	message, err := reader.ReadString('\n')
 	if err != nil {
 		if err == io.EOF {
 			fmt.Println("client closed connection")
@@ -41,10 +42,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	message := string(buffer[:n])
+	message = strings.TrimSuffix(message, "\n")
+
 	fmt.Printf("received: %q\n", message)
 
-	if message != "HELLO\n" {
+	if message != "HELLO" {
 		fmt.Println("expected HELLO")
 		return
 	}
@@ -61,7 +63,7 @@ func main() {
 	// -------------------------
 
 	for {
-		n, err = conn.Read(buffer)
+		message, err = reader.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
 				fmt.Println("client closed connection")
@@ -71,7 +73,6 @@ func main() {
 			log.Fatal(err)
 		}
 
-		message = string(buffer[:n])
 		message = strings.TrimSuffix(message, "\n")
 
 		fmt.Printf("received: %q\n", message)
