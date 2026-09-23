@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strings"
 )
 
 func main() {
@@ -26,7 +27,10 @@ func main() {
 
 	buffer := make([]byte, 1024)
 
-	// Step 1: Receive HELLO
+	// -------------------------
+	// Handshake
+	// -------------------------
+
 	n, err := conn.Read(buffer)
 	if err != nil {
 		if err == io.EOF {
@@ -41,11 +45,10 @@ func main() {
 	fmt.Printf("received: %q\n", message)
 
 	if message != "HELLO\n" {
-		fmt.Println("unexpected message")
+		fmt.Println("expected HELLO")
 		return
 	}
 
-	// Step 2: Send WELCOME
 	_, err = conn.Write([]byte("WELCOME\n"))
 	if err != nil {
 		log.Fatal(err)
@@ -53,31 +56,52 @@ func main() {
 
 	fmt.Println("sent: WELCOME")
 
-	// Step 3: Receive MESSAGE
-	n, err = conn.Read(buffer)
-	if err != nil {
-		if err == io.EOF {
-			fmt.Println("client closed connection")
-			return
-		}
+	// -------------------------
+	// Command loop
+	// -------------------------
 
-		log.Fatal(err)
-	}
-
-	message = string(buffer[:n])
-	fmt.Printf("received: %q\n", message)
-
-	// Step 4: Acknowledge MESSAGE
-	if len(message) >= len("MESSAGE ") &&
-		message[:len("MESSAGE ")] == "MESSAGE " {
-
-		fmt.Println("application message:", message[len("MESSAGE "):])
-
-		_, err = conn.Write([]byte("ACK\n"))
+	for {
+		n, err = conn.Read(buffer)
 		if err != nil {
+			if err == io.EOF {
+				fmt.Println("client closed connection")
+				return
+			}
+
 			log.Fatal(err)
 		}
 
-		fmt.Println("sent: ACK")
+		message = string(buffer[:n])
+		message = strings.TrimSuffix(message, "\n")
+
+		fmt.Printf("received: %q\n", message)
+
+		switch {
+		case strings.HasPrefix(message, "MESSAGE "):
+			text := strings.TrimPrefix(message, "MESSAGE ")
+
+			fmt.Println("application message:", text)
+
+			_, err = conn.Write([]byte("ACK\n"))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println("sent: ACK")
+
+		case message == "QUIT":
+			_, err = conn.Write([]byte("BYE\n"))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println("sent: BYE")
+			fmt.Println("closing connection")
+
+			return
+
+		default:
+			fmt.Println("unknown command")
+		}
 	}
 }
