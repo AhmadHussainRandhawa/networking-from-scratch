@@ -32,27 +32,19 @@ func main() {
 	// Handshake
 	// -------------------------
 
-	message, err := reader.ReadString('\n')
+	line, err := readFrame(reader)
 	if err != nil {
-		if err == io.EOF {
-			fmt.Println("client closed connection")
-			return
-		}
-
 		log.Fatal(err)
 	}
 
-	message = strings.TrimSuffix(message, "\n")
+	command := ParseCommand(line)
 
-	fmt.Printf("received: %q\n", message)
-
-	if message != "HELLO" {
+	if command.Type != CommandHello {
 		fmt.Println("expected HELLO")
 		return
 	}
 
-	_, err = conn.Write([]byte("WELCOME\n"))
-	if err != nil {
+	if err := writeResponse(conn, "WELCOME\n"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -63,7 +55,7 @@ func main() {
 	// -------------------------
 
 	for {
-		message, err = reader.ReadString('\n')
+		line, err := readFrame(reader)
 		if err != nil {
 			if err == io.EOF {
 				fmt.Println("client closed connection")
@@ -73,26 +65,20 @@ func main() {
 			log.Fatal(err)
 		}
 
-		message = strings.TrimSuffix(message, "\n")
+		command := ParseCommand(line)
 
-		fmt.Printf("received: %q\n", message)
+		switch command.Type {
+		case CommandMessage:
+			fmt.Println("application message:", command.Payload)
 
-		switch {
-		case strings.HasPrefix(message, "MESSAGE "):
-			text := strings.TrimPrefix(message, "MESSAGE ")
-
-			fmt.Println("application message:", text)
-
-			_, err = conn.Write([]byte("ACK\n"))
-			if err != nil {
+			if err := writeResponse(conn, "ACK\n"); err != nil {
 				log.Fatal(err)
 			}
 
 			fmt.Println("sent: ACK")
 
-		case message == "QUIT":
-			_, err = conn.Write([]byte("BYE\n"))
-			if err != nil {
+		case CommandQuit:
+			if err := writeResponse(conn, "BYE\n"); err != nil {
 				log.Fatal(err)
 			}
 
@@ -105,4 +91,18 @@ func main() {
 			fmt.Println("unknown command")
 		}
 	}
+}
+
+func readFrame(reader *bufio.Reader) (string, error) {
+	line, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSuffix(line, "\n"), nil
+}
+
+func writeResponse(conn net.Conn, response string) error {
+	_, err := conn.Write([]byte(response))
+	return err
 }
