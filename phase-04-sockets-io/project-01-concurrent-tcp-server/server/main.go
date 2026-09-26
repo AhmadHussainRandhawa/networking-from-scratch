@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 )
 
 func main() {
@@ -20,8 +21,18 @@ func main() {
 			continue
 		}
 
-		fmt.Println("Client Connected:", conn.RemoteAddr())
-
-		conn.Close()
+		go handleConnection(conn)
 	}
+}
+
+func handleConnection(conn net.Conn) {
+
+	defer conn.Close()
+
+	fmt.Println("client connected:", conn.RemoteAddr())
+
+	time.Sleep(10 * time.Second)
+
+	fmt.Println("client disconnected:", conn.RemoteAddr())
+
 }
