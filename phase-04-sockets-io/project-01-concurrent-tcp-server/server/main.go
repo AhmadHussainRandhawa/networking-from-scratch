@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 )
@@ -27,22 +28,28 @@ func main() {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	fmt.Println("client connected:", conn.RemoteAddr())
+	addr := conn.RemoteAddr()
+	fmt.Println("connected:", addr)
 
 	buffer := make([]byte, 1024)
 
 	for {
 		n, err := conn.Read(buffer)
+
 		if err != nil {
-			fmt.Println("client disconnected:", conn.RemoteAddr())
+			if err == io.EOF {
+				fmt.Println("closed by client:", addr)
+			} else {
+				fmt.Println("read error:", err)
+			}
 			return
 		}
 
-		message := buffer[:n]
+		if n == 0 {
+			continue
+		}
 
-		fmt.Printf("received from %s: %s", conn.RemoteAddr(), message)
-
-		_, err = conn.Write(message)
+		_, err = conn.Write(buffer[:n])
 		if err != nil {
 			fmt.Println("write error:", err)
 			return
