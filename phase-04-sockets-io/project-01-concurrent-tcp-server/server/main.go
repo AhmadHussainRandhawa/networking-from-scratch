@@ -49,6 +49,8 @@ func handleConnection(conn net.Conn) {
 			continue
 		}
 
+		fmt.Printf("[%s] received: %s", addr, buffer[:n])
+
 		_, err = conn.Write(buffer[:n])
 		if err != nil {
 			fmt.Println("write error:", err)
