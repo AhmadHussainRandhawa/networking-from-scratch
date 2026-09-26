@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"time"
 )
 
 func main() {
@@ -31,6 +32,9 @@ func handleConnection(conn net.Conn) {
 	addr := conn.RemoteAddr()
 	fmt.Println("connected:", addr)
 
+	conn.SetReadDeadline(time.Now().Add(30 * time.Second))
+	conn.SetWriteDeadline(time.Now().Add(30 * time.Second))
+
 	buffer := make([]byte, 1024)
 
 	for {
@@ -56,5 +60,7 @@ func handleConnection(conn net.Conn) {
 			fmt.Println("write error:", err)
 			return
 		}
+
+		conn.SetReadDeadline(time.Now().Add(30 * time.Second))
 	}
 }
